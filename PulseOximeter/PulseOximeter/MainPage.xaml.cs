@@ -17,8 +17,8 @@ public partial class MainPage : ContentPage
 
     private void ContentPage_Loaded(object sender, EventArgs e)
     {
-        _model = new ApplicationModel();
-        _model.Start();
+        //_model = new ApplicationModel();
+        //_model.Start();
 
         /*
         uint SAMPLE_FREQUENCY = 44100;
@@ -53,12 +53,24 @@ public partial class MainPage : ContentPage
         */
     }
 
-    private void ConnectButton_Clicked(object sender, EventArgs e)
+    private void MuteButton_Clicked(object sender, EventArgs e)
     {
-        if (_model != null)
-        {
-            _model.Connect();
-        }
+
+    }
+
+    private void SetAlarmsButton_Clicked(object sender, EventArgs e)
+    {
+
+    }
+
+    private void DetailedViewButton_Clicked(object sender, EventArgs e)
+    {
+
+    }
+
+    private void RecordButton_Clicked(object sender, EventArgs e)
+    {
+
     }
 }
 

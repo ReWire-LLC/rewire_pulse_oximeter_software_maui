@@ -3,12 +3,23 @@
     x:Class="PulseOximeter.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:PulseOximeter.View"
     xmlns:local="clr-namespace:PulseOximeter"
     Shell.FlyoutBehavior="Disabled">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <Tab Title="Standard View" Icon="standard_view.png">
+            <ShellContent ContentTemplate="{DataTemplate views:Page_StandardView}" />
+        </Tab>
+        <Tab Title="Detailed View" Icon="detailed_view.png">
+            <ShellContent ContentTemplate="{DataTemplate views:Page_DetailedView}" />
+        </Tab>
+        <Tab Title="Alarms" Icon="alarm.png">
+            <ShellContent ContentTemplate="{DataTemplate views:Page_Alarms}" />
+        </Tab>
+        <Tab Title="About" Icon="information.png">
+            <ShellContent ContentTemplate="{DataTemplate views:Page_About}" />
+        </Tab>        
+    </TabBar>
 
 </Shell>

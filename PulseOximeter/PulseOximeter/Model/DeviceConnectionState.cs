@@ -12,12 +12,6 @@ namespace PulseOximeter.Model
         [Description("No device found")]
         NoDevice,
 
-        [Description("Searching for device")]
-        SearchingForDevice,
-
-        [Description("Connecting to device")]
-        ConnectingToDevice,
-
         [Description("Device connected")]
         Connected,
 

@@ -214,24 +214,31 @@ namespace PulseOximeter.CrossPlatform
         {
             List<string> result = new List<string>();
 
-            if (_serial_port != null)
+            try
             {
-                byte[] buffer = new byte[1024];
-                int num_bytes_read = _serial_port.Read(buffer, 20);
-                if (num_bytes_read > 0)
+                if (_serial_port != null)
                 {
-                    var bytes_read = buffer.ToList().GetRange(0, num_bytes_read);
-                    input_bytes.AddRange(bytes_read);
-                    int index_of_last_newline = input_bytes.FindLastIndex(x => x == end_of_line_byte);
-                    if (index_of_last_newline > -1)
+                    byte[] buffer = new byte[1024];
+                    int num_bytes_read = _serial_port.Read(buffer, 20);
+                    if (num_bytes_read > 0)
                     {
-                        var subset_of_bytes = input_bytes.GetRange(0, index_of_last_newline + 1);
-                        input_bytes = input_bytes.Skip(index_of_last_newline + 1).ToList();
+                        var bytes_read = buffer.ToList().GetRange(0, num_bytes_read);
+                        input_bytes.AddRange(bytes_read);
+                        int index_of_last_newline = input_bytes.FindLastIndex(x => x == end_of_line_byte);
+                        if (index_of_last_newline > -1)
+                        {
+                            var subset_of_bytes = input_bytes.GetRange(0, index_of_last_newline + 1);
+                            input_bytes = input_bytes.Skip(index_of_last_newline + 1).ToList();
 
-                        var string_data = System.Text.Encoding.ASCII.GetString(subset_of_bytes.ToArray()).Trim();
-                        result = string_data.Split('\n').ToList();
+                            var string_data = System.Text.Encoding.ASCII.GetString(subset_of_bytes.ToArray()).Trim();
+                            result = string_data.Split('\n').ToList();
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                //empty
             }
 
             return result;
