@@ -1,4 +1,5 @@
 ﻿using Plugin.Maui.Audio;
+using PulseOximeter.Model;
 using PulseOximeter.Model.Audio;
 using System.IO;
 
@@ -6,31 +7,21 @@ namespace PulseOximeter;
 
 public partial class MainPage : ContentPage
 {
-    //private AudioDataChunk _sineToneChunk;
     private byte[] myWaveData;
-
-    int count = 0;
+    private ApplicationModel _model = null;
 
 	public MainPage()
 	{
 		InitializeComponent();
 	}
 
-	private void OnCounterClicked(object sender, EventArgs e)
-	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
-	}
-
     private void ContentPage_Loaded(object sender, EventArgs e)
     {
-		uint SAMPLE_FREQUENCY = 44100;
+        _model = new ApplicationModel();
+        _model.Start();
+
+        /*
+        uint SAMPLE_FREQUENCY = 44100;
 		ushort AUDIO_LENGTH_IN_SECONDS = 1;
 
         List<Byte> tempBytes = new List<byte>();
@@ -59,6 +50,15 @@ public partial class MainPage : ContentPage
         MemoryStream memoryStream = new MemoryStream(myWaveData);
         var audioPlayer = AudioManager.Current.CreatePlayer(memoryStream);
         audioPlayer.Play();
+        */
+    }
+
+    private void ConnectButton_Clicked(object sender, EventArgs e)
+    {
+        if (_model != null)
+        {
+            _model.Connect();
+        }
     }
 }
 

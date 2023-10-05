@@ -54,8 +54,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="CrossPlatform\" />
 	  <Folder Include="Platforms\Windows\PlatformImplementations\" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(TargetFramework.Contains('-android')) != false">
+	  <ProjectReference Include="..\UsbSerialForAndroid\UsbSerialForAndroid.csproj" />
 	</ItemGroup>
 
 </Project>
