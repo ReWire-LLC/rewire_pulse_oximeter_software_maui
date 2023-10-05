@@ -62,6 +62,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="View\ContentView_TitleView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="View\Page_About.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

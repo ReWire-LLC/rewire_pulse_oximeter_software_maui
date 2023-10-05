@@ -1,12 +1,44 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:PulseOximeter.View"
              x:Class="PulseOximeter.View.Page_StandardView"
+             Shell.NavBarIsVisible="False"
              Title="Page_StandardView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Standard View"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <views:ContentView_TitleView />
+        </Grid>
+        
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0" Text="Heart Rate" FontSize="48" HorizontalOptions="Center" />
+            <Label Grid.Row="0" Grid.Column="1" Text="SpO2" FontSize="48" HorizontalOptions="Center" />
+
+            <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 5,5" StrokeThickness="2" Stroke="Gray" Margin="10" Background="{Binding Path=HeartRateBackground, FallbackValue=White}">
+                <Label Text="{Binding Path=HeartRate, FallbackValue=100}" FontSize="150" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" />
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 5,5" StrokeThickness="2" Stroke="Gray" Margin="10" Background="{Binding Path=SpO2Background, FallbackValue=White}">
+                <Label Text="{Binding Path=SpO2, FallbackValue=100}" FontSize="150" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" />
+            </Border>
+
+        </Grid>
+    </Grid>
+    
+    
 </ContentPage>

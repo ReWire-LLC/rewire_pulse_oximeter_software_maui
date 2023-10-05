@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PulseOximeter.View.ContentView_TitleView">
+
+    <Grid BackgroundColor="#F2F2F2">
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center" Margin="10">
+            <Image Source="rewire_logo_blue.png" HeightRequest="50" />
+            <Label Text="ReWire Pulse Oximeter" FontSize="24" FontAttributes="Bold" VerticalOptions="Center" Margin="10,0,0,0" />
+        </StackLayout>
+
+        <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Margin="10">
+            <Image Source="volume_on.png" HeightRequest="50" Margin="0,0,50,0" />
+            <Image Source="record.png" HeightRequest="50" Margin="0,0,20,0" />
+        </StackLayout>
+
+        <Border StrokeThickness="0" HeightRequest="4" VerticalOptions="End">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Offset="0" Color="#BFBFBF" />
+                    <GradientStop Offset="1" Color="White" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+    </Grid>
+    
+</ContentView>

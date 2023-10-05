@@ -27,8 +27,6 @@
             <Label Grid.Column="0" Text="{Binding Path=ConnectionState, FallbackValue=No device found}" FontSize="18" HorizontalOptions="Start" VerticalOptions="Center" Margin="10" LineBreakMode="WordWrap" />
 
             <Button x:Name="MuteButton" Grid.Column="1" Text="{Binding Path=MuteButtonText, FallbackValue=Mute}" LineBreakMode="WordWrap" Margin="10" FontSize="18" Padding="10" Clicked="MuteButton_Clicked" />
-            <Button x:Name="SetAlarmsButton" Grid.Column="2" Text="Set Alarms" LineBreakMode="WordWrap" Margin="10" FontSize="18" Padding="10" Clicked="SetAlarmsButton_Clicked" />
-            <Button x:Name="DetailedViewButton" Grid.Column="3" Text="{Binding Path=DetailedViewButtonText, FallbackValue=Detail View}" LineBreakMode="WordWrap" Margin="10" FontSize="18" Padding="10" Clicked="DetailedViewButton_Clicked" />
             <Button x:Name="RecordButton" Grid.Column="4" Text="{Binding Path=RecordButtonText, FallbackValue=Record}" LineBreakMode="WordWrap" Margin="10" FontSize="18" Padding="10" Clicked="RecordButton_Clicked" />
         </Grid>
 
