@@ -10,8 +10,8 @@
         </StackLayout>
 
         <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Margin="10">
-            <Image Source="volume_on.png" HeightRequest="50" Margin="0,0,50,0" />
-            <Image Source="record.png" HeightRequest="50" Margin="0,0,20,0" />
+            <ImageButton x:Name="MuteButton" Source="volume_on.png" HeightRequest="50" Margin="0,0,50,0" Clicked="MuteButton_Clicked" />
+            <ImageButton x:Name="RecordButton" Source="record.png" HeightRequest="50" Margin="0,0,20,0" Clicked="RecordButton_Clicked" />
         </StackLayout>
 
         <Border StrokeThickness="0" HeightRequest="4" VerticalOptions="End">

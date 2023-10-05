@@ -24,6 +24,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Label Grid.Row="0" Grid.Column="0" Text="Heart Rate" FontSize="48" HorizontalOptions="Center" />
@@ -36,6 +37,9 @@
             <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 5,5" StrokeThickness="2" Stroke="Gray" Margin="10" Background="{Binding Path=SpO2Background, FallbackValue=White}">
                 <Label Text="{Binding Path=SpO2, FallbackValue=100}" FontSize="150" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" />
             </Border>
+
+            <Label Grid.Row="2" Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center" FontSize="18" Text="{Binding Path=ConnectionState, FallbackValue=Connection State}" Margin="10" />
+            <Button Grid.Row="2" Grid.Column="1" HorizontalOptions="End" VerticalOptions="Center" Margin="10" Text="Connect" x:Name="ConnectButton" Clicked="ConnectButton_Clicked" />
 
         </Grid>
     </Grid>

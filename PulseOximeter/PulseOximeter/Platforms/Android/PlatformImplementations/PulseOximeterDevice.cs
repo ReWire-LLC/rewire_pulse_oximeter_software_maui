@@ -34,18 +34,6 @@ namespace PulseOximeter.CrossPlatform
             return (_serial_port != null);
         }
 
-        private partial void PlatformInitialization ()
-        {
-            //Subscribe to notifications from the USB receiver class
-            _usb_receiver.DeviceDetached += Handle_DeviceAttached;
-            _usb_receiver.DeviceDetached += Handle_DeviceDetached;
-            _usb_receiver.PermissionGranted += Handle_PermissionGranted;
-
-            //Get the USB manager
-            var current_activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-            _usb_manager = current_activity.ApplicationContext.GetSystemService(Android.Content.Context.UsbService) as Android.Hardware.Usb.UsbManager;
-        }
-
         #endregion
 
         #region Event Handlers
@@ -147,6 +135,27 @@ namespace PulseOximeter.CrossPlatform
         #endregion
 
         #region Public Partial Methods
+
+        public partial bool PlatformInitialization()
+        {
+            //Get the current activity
+            var current_activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+            if (current_activity != null)
+            {
+                //Get the USB manager
+                _usb_manager = current_activity.ApplicationContext.GetSystemService(Android.Content.Context.UsbService) as Android.Hardware.Usb.UsbManager;
+
+                if (_usb_manager != null)
+                {
+                    //Subscribe to notifications from the USB receiver class
+                    _usb_receiver.DeviceDetached += Handle_DeviceAttached;
+                    _usb_receiver.DeviceDetached += Handle_DeviceDetached;
+                    _usb_receiver.PermissionGranted += Handle_PermissionGranted;
+                }
+            }
+
+            return (current_activity != null && _usb_manager != null);
+        }
 
         public partial void Open()
         {

@@ -1,3 +1,5 @@
+using PulseOximeter.Model;
+
 namespace PulseOximeter.View;
 
 public partial class ContentView_TitleView : ContentView
@@ -6,4 +8,14 @@ public partial class ContentView_TitleView : ContentView
 	{
 		InitializeComponent();
 	}
+
+    private void MuteButton_Clicked(object sender, EventArgs e)
+    {
+
+    }
+
+    private void RecordButton_Clicked(object sender, EventArgs e)
+    {
+
+    }
 }

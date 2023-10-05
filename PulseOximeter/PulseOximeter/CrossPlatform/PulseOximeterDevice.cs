@@ -25,7 +25,7 @@ namespace PulseOximeter.CrossPlatform
 
         public PulseOximeterDevice()
         {
-            PlatformInitialization();
+            //empty
         }
 
         #endregion
@@ -46,11 +46,11 @@ namespace PulseOximeter.CrossPlatform
 
         private partial bool IsConnectedAndStreaming();
 
-        private partial void PlatformInitialization();
-
         #endregion
 
         #region Public Partial Methods
+
+        public partial bool PlatformInitialization();
 
         public partial void Open();
 

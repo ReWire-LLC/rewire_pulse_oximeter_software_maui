@@ -9,6 +9,9 @@ namespace PulseOximeter.Model
 {
     public enum DeviceConnectionState
     {
+        [Description("Waiting for OS to be ready")]
+        WaitForOperatingSystemToBeReady,
+
         [Description("No device found")]
         NoDevice,
 
