@@ -15,6 +15,15 @@ namespace PulseOximeter.Model
         [Description("No device found")]
         NoDevice,
 
+        [Description("Searching for device")]
+        SearchingForDevice,
+
+        [Description("Requesting permission")]
+        RequestingPermission,
+
+        [Description("Connecting to device")]
+        ConnectingToDevice,
+
         [Description("Device connected")]
         Connected,
 

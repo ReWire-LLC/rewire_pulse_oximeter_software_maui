@@ -52,7 +52,11 @@ namespace PulseOximeter.CrossPlatform
 
         public partial bool PlatformInitialization();
 
-        public partial void Open();
+        public partial bool ScanForDevice();
+
+        public partial bool CheckPermissions();
+
+        public partial void RequestPermissions();
 
         public partial void Connect();
 

@@ -18,12 +18,11 @@ namespace PulseOximeter.CrossPlatform
         private UsbReceiver _usb_receiver = UsbReceiver.GetInstance();
         private UsbManager _usb_manager = null;
 
-        private UsbDevice _connected_usb_device = null;
+        private UsbDevice _selected_usb_device = null;
         private UsbDeviceConnection _usb_device_connection = null;
         private UsbSerialPort _serial_port = null;
 
-        private List<byte> input_bytes = new List<byte>();
-        private byte end_of_line_byte = 0x0A;
+        private List<byte> _buffer = new List<byte>();
 
         #endregion
 
@@ -40,32 +39,40 @@ namespace PulseOximeter.CrossPlatform
 
         private void Handle_PermissionGranted(object sender, global::Android.Hardware.Usb.UsbDevice e)
         {
-            OnPermissionGranted(e);
+            //OnPermissionGranted(e);
         }
 
         private void Handle_DeviceDetached(object sender, global::Android.Hardware.Usb.UsbDevice e)
         {
-            OnDeviceDetached(e);
+            //OnDeviceDetached(e);
         }
 
         private void Handle_DeviceAttached(object sender, global::Android.Hardware.Usb.UsbDevice e)
         {
-            OnDeviceAttached(e);
+            //OnDeviceAttached(e);
         }
 
         #endregion
 
         #region Private Methods
 
+        /*
         private void OnPermissionGranted (UsbDevice usb_device)
         {
+            System.Diagnostics.Debug.WriteLine("ON PERMISSIONG GRANTED");
+
             //Set the "connected" USB device to be the device passed in as a parameter to this function
-            _connected_usb_device = usb_device;
+            //_connected_usb_device = usb_device;
 
             //Connect to the device
-            Connect();
+            if (_selected_usb_device != null && _usb_manager != null && _usb_manager.HasPermission(_selected_usb_device))
+            {
+                //Connect();
+            }
         }
+        */
 
+        /*
         private void OnDeviceAttached (UsbDevice usb_device)
         {
             var current_activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
@@ -91,6 +98,9 @@ namespace PulseOximeter.CrossPlatform
                 }
             }
         }
+        */
+
+        /*
 
         private void OnDeviceDetached (UsbDevice usb_device)
         {
@@ -109,11 +119,14 @@ namespace PulseOximeter.CrossPlatform
                 //empty
             }
         }
+        */
+
+        /*
 
         private void SelectPulseOximeterDevice_FromAllConnectedDevices ()
         {
             //If the "connected usb device" object is currently null...
-            if (_connected_usb_device == null && _usb_manager != null)
+            if (_selected_usb_device == null && _usb_manager != null)
             {
                 //Grab the Android USB manager and get a list of connected devices
                 var attached_devices = _usb_manager.DeviceList;
@@ -123,7 +136,7 @@ namespace PulseOximeter.CrossPlatform
                 {
                     if (attached_devices[device_key].VendorId == REWIRE_PULSE_OXIMETER_VID && attached_devices[device_key].ProductId == REWIRE_PULSE_OXIMETER_PID)
                     {
-                        _connected_usb_device = attached_devices[device_key];
+                        _selected_usb_device = attached_devices[device_key];
                         
                         //We found the correct device, so break out of the loop
                         break;
@@ -131,6 +144,7 @@ namespace PulseOximeter.CrossPlatform
                 }
             }
         }
+        */
 
         #endregion
 
@@ -148,22 +162,69 @@ namespace PulseOximeter.CrossPlatform
                 if (_usb_manager != null)
                 {
                     //Subscribe to notifications from the USB receiver class
-                    _usb_receiver.DeviceDetached += Handle_DeviceAttached;
-                    _usb_receiver.DeviceDetached += Handle_DeviceDetached;
-                    _usb_receiver.PermissionGranted += Handle_PermissionGranted;
+                    //_usb_receiver.DeviceDetached += Handle_DeviceAttached;
+                    //_usb_receiver.DeviceDetached += Handle_DeviceDetached;
+                    //_usb_receiver.PermissionGranted += Handle_PermissionGranted;
                 }
             }
 
             return (current_activity != null && _usb_manager != null);
         }
 
-        public partial void Open()
+        public partial bool ScanForDevice()
         {
-            SelectPulseOximeterDevice_FromAllConnectedDevices();
-
-            if (_connected_usb_device != null)
+            //If the "connected usb device" object is currently null...
+            if (_selected_usb_device == null && _usb_manager != null)
             {
-                OnDeviceAttached(_connected_usb_device);
+                //Grab the Android USB manager and get a list of connected devices
+                var attached_devices = _usb_manager.DeviceList;
+
+                //Find the pulse oximeter in the list of connected devices
+                foreach (var device_key in attached_devices.Keys)
+                {
+                    if (attached_devices[device_key].VendorId == REWIRE_PULSE_OXIMETER_VID && attached_devices[device_key].ProductId == REWIRE_PULSE_OXIMETER_PID)
+                    {
+                        _selected_usb_device = attached_devices[device_key];
+
+                        //We found the correct device, so break out of the loop
+                        break;
+                    }
+                }
+            }
+
+            return (_selected_usb_device != null);
+        }
+
+        public partial bool CheckPermissions()
+        {
+            if (_selected_usb_device != null && _usb_manager != null)
+            {
+                return (_usb_manager.HasPermission(_selected_usb_device));
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public partial void RequestPermissions()
+        {
+            var current_activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+            if (_usb_manager != null && _selected_usb_device != null && current_activity != null)
+            {
+                //First check to see if the device matches the VID and PID of the ReWire pulse oximeter
+                if (_selected_usb_device.VendorId == REWIRE_PULSE_OXIMETER_VID && _selected_usb_device.ProductId == REWIRE_PULSE_OXIMETER_PID)
+                {
+                    //Now let's check to see if we have already been granted permission to communicate with the device
+                    if (!_usb_manager.HasPermission(_selected_usb_device))
+                    {
+                        //If permission has not been granted, we need to request permission
+                        PendingIntent pending_intent = PendingIntent.GetBroadcast(current_activity, 0, new Android.Content.Intent(UsbReceiver.ACTION_USB_PERMISSION), PendingIntentFlags.Immutable);
+                        IntentFilter intent_filter = new IntentFilter(UsbReceiver.ACTION_USB_PERMISSION);
+                        current_activity.RegisterReceiver(_usb_receiver, intent_filter);
+                        _usb_manager.RequestPermission(_selected_usb_device, pending_intent);
+                    }
+                }
             }
         }
 
@@ -174,9 +235,9 @@ namespace PulseOximeter.CrossPlatform
             //If we reach this function, then the device is connected and we also have permission
             //to interact with it.
             //So let's set everything up...
-            if (_connected_usb_device != null && current_activity != null && _usb_receiver != null)
+            if (_selected_usb_device != null && current_activity != null && _usb_receiver != null)
             {
-                CdcAcmSerialDriver serial_driver = new CdcAcmSerialDriver(_connected_usb_device);
+                CdcAcmSerialDriver serial_driver = new CdcAcmSerialDriver(_selected_usb_device);
                 _usb_device_connection = _usb_manager.OpenDevice(serial_driver.GetDevice());
                 _serial_port = serial_driver.Ports.FirstOrDefault();
 
@@ -207,7 +268,7 @@ namespace PulseOximeter.CrossPlatform
         {
             var current_activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
 
-            if (_usb_receiver != null && _connected_usb_device != null && current_activity != null)
+            if (_usb_receiver != null && _selected_usb_device != null && current_activity != null)
             {
                 current_activity.UnregisterReceiver(_usb_receiver);
 
@@ -227,21 +288,29 @@ namespace PulseOximeter.CrossPlatform
             {
                 if (_serial_port != null)
                 {
-                    byte[] buffer = new byte[1024];
-                    int num_bytes_read = _serial_port.Read(buffer, 20);
+                    byte[] current_read = new byte[1024];
+                    int num_bytes_read = _serial_port.Read(current_read, 20);
                     if (num_bytes_read > 0)
                     {
-                        var bytes_read = buffer.ToList().GetRange(0, num_bytes_read);
-                        input_bytes.AddRange(bytes_read);
-                        int index_of_last_newline = input_bytes.FindLastIndex(x => x == end_of_line_byte);
-                        if (index_of_last_newline > -1)
-                        {
-                            var subset_of_bytes = input_bytes.GetRange(0, index_of_last_newline + 1);
-                            input_bytes = input_bytes.Skip(index_of_last_newline + 1).ToList();
+                        var bytes_read = current_read.ToList().GetRange(0, num_bytes_read);
+                        _buffer.AddRange(bytes_read);
+                    }
 
-                            var string_data = System.Text.Encoding.ASCII.GetString(subset_of_bytes.ToArray()).Trim();
-                            result = string_data.Split('\n').ToList();
+                    if (_buffer.Contains(0x0A))
+                    {
+                        int index_of_newline = _buffer.IndexOf(0x0A);
+                        var current_line_as_bytes = _buffer.Take(index_of_newline + 1);
+                        string current_line = Encoding.UTF8.GetString(current_line_as_bytes.ToArray()).Trim();
+                        if (_buffer.Count > (index_of_newline + 1))
+                        {
+                            _buffer = _buffer.Skip(index_of_newline + 1).ToList();
                         }
+                        else
+                        {
+                            _buffer.Clear();
+                        }
+
+                        result.Add(current_line);
                     }
                 }
             }

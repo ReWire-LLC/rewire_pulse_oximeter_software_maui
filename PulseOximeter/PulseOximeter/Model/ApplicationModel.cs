@@ -19,7 +19,7 @@ namespace PulseOximeter.Model
 
         private BackgroundWorker _background_thread = new BackgroundWorker();
         private PulseOximeterDevice _pulse_oximeter_device = new PulseOximeterDevice();
-        private DeviceConnectionState _device_connection_state = DeviceConnectionState.NoDevice;
+        private DeviceConnectionState _device_connection_state = DeviceConnectionState.WaitForOperatingSystemToBeReady;
 
         private bool _connect_flag = false;
 
@@ -137,6 +137,7 @@ namespace PulseOximeter.Model
         {
             if (e.Error != null)
             {
+                System.Diagnostics.Debug.WriteLine(e.Error.ToString());
                 _device_connection_state = DeviceConnectionState.Error;
                 NotifyPropertyChanged(nameof(ConnectionState));
             }
@@ -162,13 +163,13 @@ namespace PulseOximeter.Model
             //Loop forever
             while (!_background_thread.CancellationPending)
             {
-                switch (_device_connection_state)
+                switch (ConnectionState)
                 {
                     case DeviceConnectionState.WaitForOperatingSystemToBeReady:
                         bool platform_initialization_result = _pulse_oximeter_device.PlatformInitialization();
                         if (platform_initialization_result)
                         {
-                            _device_connection_state = DeviceConnectionState.NoDevice;
+                            ConnectionState = DeviceConnectionState.NoDevice;
                         }
                         else
                         {
@@ -179,16 +180,38 @@ namespace PulseOximeter.Model
                         break;
                     case DeviceConnectionState.NoDevice:
 
-                        if (_connect_flag)
+                        ConnectionState = DeviceConnectionState.SearchingForDevice;
+                        break;
+                    case DeviceConnectionState.SearchingForDevice:
+
+                        bool device_found = _pulse_oximeter_device.ScanForDevice();
+                        if (device_found)
                         {
-                            _connect_flag = false;
-                            _pulse_oximeter_device.Open();
+                            ConnectionState = DeviceConnectionState.RequestingPermission;
                         }
 
+                        break;
+
+                    case DeviceConnectionState.RequestingPermission:
+
+                        bool has_permissions = _pulse_oximeter_device.CheckPermissions();
+                        if (!has_permissions)
+                        {
+                            _pulse_oximeter_device.RequestPermissions();
+                        }
+                        else
+                        {
+                            ConnectionState = DeviceConnectionState.ConnectingToDevice;
+                        }
+
+                        break;
+                    case DeviceConnectionState.ConnectingToDevice:
+
+                        _pulse_oximeter_device.Connect();
                         if (_pulse_oximeter_device.IsConnected)
                         {
                             _pulse_oximeter_device.SendStreamOnCommand();
-                            _device_connection_state = DeviceConnectionState.Connected;
+                            ConnectionState = DeviceConnectionState.Connected;
                         }
 
                         break;
@@ -200,7 +223,7 @@ namespace PulseOximeter.Model
                         }
                         else
                         {
-                            _device_connection_state = DeviceConnectionState.NoDevice;
+                            ConnectionState = DeviceConnectionState.NoDevice;
                         }
 
                         break;
@@ -233,35 +256,67 @@ namespace PulseOximeter.Model
             //Process each line of new data
             foreach (var current_line in input_data)
             {
-                //Split the line into its component parts
-                var split_current_line = current_line.Split('\t').ToList();
-                if (split_current_line.Count >= 9)
+                if (!string.IsNullOrEmpty(current_line) && current_line.StartsWith("[DATA]"))
                 {
-                    //Get the IR, HR, and SpO2 components
-                    var ir_string = split_current_line[1];
-                    var hr_string = split_current_line[3];
-                    var spo2_string = split_current_line[5];
-
-                    //Convert each component from a string to an integer
-                    var ir_parse_success = Int32.TryParse(ir_string, out int ir);
-                    var hr_parse_success = Int32.TryParse(hr_string, out int hr);
-                    var spo2_parse_success = Int32.TryParse(spo2_string, out int spo2);
-
-                    if (hr_parse_success && spo2_parse_success && ir_parse_success)
+                    //Sometimes we get malformed lines (probably due to serial buffer issues on Android's side)
+                    //When this happens, sometimes we will have a short line of truncasted data followed by
+                    //another set of data on the same line. So the string "[DATA]" appears twice. If we detect
+                    //this, then let's just skip this line.
+                    if (current_line.LastIndexOf("[DATA]") > 0)
                     {
-                        IR = ir;
-                        BackgroundThread_UpdatePerfusionIndex(ir);
+                        continue;
+                    }
 
-                        if (_stopwatch.ElapsedMilliseconds >= 1000)
+                    //Split the line into its component parts
+                    var split_current_line = current_line.Split('\t').ToList();
+                    if (split_current_line.Count == 9)
+                    {
+                        //A well-formed line of data should have exactly nine components
+                        //The first component is simply the "[DATA]" string
+                        //The next 8 components are all integers
+
+                        List<int> current_line_values = new List<int>() { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                        bool parse_success = true;
+                        for (int i = 1; i < 9; i++)
                         {
-                            HeartRate = hr;
-                            SpO2 = spo2;
-
-                            _stopwatch.Restart();
+                            parse_success = Int32.TryParse(split_current_line[i], out int result);
+                            if (!parse_success)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                current_line_values[i] = result;
+                            }
                         }
+                        
+                        if (parse_success)
+                        {
+                            //Get the IR, HR, and SpO2 components
+                            var ir = current_line_values[1];
+                            var hr = current_line_values[3];
+                            var spo2 = current_line_values[5];
 
-                        //Handle recording of data
-                        BackgroundThread_HandleRecording(current_line.Substring(7).Replace("\t", ", "));
+                            //Set the values on the model
+                            IR = ir;
+                            BackgroundThread_UpdatePerfusionIndex(ir);
+
+                            if (_stopwatch.ElapsedMilliseconds >= 1000)
+                            {
+                                HeartRate = hr;
+                                SpO2 = spo2;
+
+                                if (spo2 > 100)
+                                {
+                                    System.Diagnostics.Debug.WriteLine(spo2.ToString());
+                                }
+
+                                _stopwatch.Restart();
+                            }
+
+                            //Handle recording of data
+                            BackgroundThread_HandleRecording(current_line.Substring(7).Replace("\t", ", "));
+                        }
                     }
                 }
             }

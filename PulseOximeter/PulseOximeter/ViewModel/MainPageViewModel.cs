@@ -21,6 +21,7 @@ namespace PulseOximeter.ViewModel
         public MainPageViewModel()
         {
             _model = ApplicationModel.GetInstance();
+            _model.PropertyChanged += ExecuteReactionsToModelPropertyChanged;
         }
 
         #endregion

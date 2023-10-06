@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Hardware.Usb;
+using Android.OS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,7 @@ namespace PulseOximeter.CrossPlatform
 
         public override void OnReceive(Context context, Intent intent)
         {
+            System.Diagnostics.Debug.WriteLine("ON RECEIVE");
             string action = intent.Action;
 
             lock (this)
@@ -63,28 +65,35 @@ namespace PulseOximeter.CrossPlatform
                 UsbDevice device;
                 if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Tiramisu)
                 {
-                    device = (UsbDevice)intent.GetParcelableExtra(UsbManager.ExtraDevice, Java.Lang.Class.FromType(typeof(UsbDevice)));
+                    //device = (UsbDevice)intent.GetParcelableExtra(UsbManager.ExtraDevice, Java.Lang.Class.FromType(typeof(object)));
+                    device = null;
                 }
                 else
                 {
                     device = (UsbDevice)intent.GetParcelableExtra(UsbManager.ExtraDevice);
                 }
 
-                if (device != null)
+                //if (device != null)
                 {
                     if (ACTION_USB_PERMISSION.Equals(action))
                     {
-                        if (intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false))
+                        System.Diagnostics.Debug.WriteLine("ACTION_USB_PERMISSION");
+                        /*if (intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false))
                         {
+                            System.Diagnostics.Debug.WriteLine("ACTION_USB_PERMISSION 2");
                             PermissionGranted?.Invoke(this, device);
-                        }
+                        }*/
+
+                        PermissionGranted?.Invoke(this, device);
                     }
                     else if (UsbManager.ActionUsbDeviceAttached.Equals(action))
                     {
+                        System.Diagnostics.Debug.WriteLine("DEVICE ATTACHED");
                         DeviceAttached?.Invoke(this, device);
                     }
                     else if (UsbManager.ActionUsbDeviceDetached.Equals(action))
                     {
+                        System.Diagnostics.Debug.WriteLine("DEVICE DETACHED");
                         DeviceDetached?.Invoke(this, device);
                     }
                 }
