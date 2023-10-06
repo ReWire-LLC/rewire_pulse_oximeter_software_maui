@@ -403,7 +403,7 @@ namespace PulseOximeter.Model
             FormatChunk format = new FormatChunk();
             DataChunk data_chunk = new DataChunk();
 
-            SineGenerator signal_data = new SineGenerator(440, 44100, 400);
+            SineGenerator signal_data = new SineGenerator(440, 44100, 400, 25);
             SilenceGenerator silence_data = new SilenceGenerator(44100, 500);
 
             data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
@@ -430,7 +430,7 @@ namespace PulseOximeter.Model
             FormatChunk format = new FormatChunk();
             DataChunk data_chunk = new DataChunk();
 
-            SineGenerator signal_data = new SineGenerator(440, 44100, 175);
+            SineGenerator signal_data = new SineGenerator(440, 44100, 175, 25);
             SilenceGenerator silence_data = new SilenceGenerator(44100, 80);
             SilenceGenerator silence_data_2 = new SilenceGenerator(44100, 350);
 
@@ -484,7 +484,7 @@ namespace PulseOximeter.Model
             FormatChunk format = new FormatChunk();
             DataChunk data = new DataChunk();
 
-            SineGenerator signal_data = new SineGenerator(pitch, 44100, tone_duration);
+            SineGenerator signal_data = new SineGenerator(pitch, 44100, tone_duration, 20);
             SilenceGenerator silence_data = new SilenceGenerator(44100, Convert.ToUInt16(silence_duration));
             data.AddSampleData(signal_data.Data, signal_data.Data);
             data.AddSampleData(silence_data.Data, silence_data.Data);
