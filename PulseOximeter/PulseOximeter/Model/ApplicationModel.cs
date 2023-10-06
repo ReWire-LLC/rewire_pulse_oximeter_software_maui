@@ -306,11 +306,6 @@ namespace PulseOximeter.Model
                                 HeartRate = hr;
                                 SpO2 = spo2;
 
-                                if (spo2 > 100)
-                                {
-                                    System.Diagnostics.Debug.WriteLine(spo2.ToString());
-                                }
-
                                 _stopwatch.Restart();
                             }
 
@@ -367,8 +362,8 @@ namespace PulseOximeter.Model
                         bool generate_double = rnd_num > 0;
 
                         //Play the alarm audio
-                        //_current_audio_player = AudioManager.Current.CreatePlayer(BackgroundThread_GenerateAlarmSound(generate_double));
-                        //_current_audio_player.Play();
+                        _current_audio_player = AudioManager.Current.CreatePlayer(BackgroundThread_GenerateAlarmSound(generate_double));
+                        _current_audio_player.Play();
 
                         //Set the "last alarm time" variable
                         _last_alarm_time = DateTime.Now;
@@ -407,26 +402,20 @@ namespace PulseOximeter.Model
             WaveHeader header = new WaveHeader();
             FormatChunk format = new FormatChunk();
             DataChunk data_chunk = new DataChunk();
-            DataChunk silence_data_chunk = new DataChunk();
-            DataChunk data_chunk2 = new DataChunk();
-            DataChunk silence_data_chunk2 = new DataChunk();
 
-            SineGenerator signal_data = new SineGenerator(200, 44100, 400);
+            SineGenerator signal_data = new SineGenerator(440, 44100, 400);
             SilenceGenerator silence_data = new SilenceGenerator(44100, 500);
 
             data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
-            silence_data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
-            data_chunk2.AddSampleData(signal_data.Data, signal_data.Data);
-            silence_data_chunk2.AddSampleData(silence_data.Data, silence_data.Data);
+            data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
+            data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
+            data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
 
-            header.FileLength += format.Length() + data_chunk.Length() + silence_data_chunk.Length() + data_chunk2.Length() + silence_data_chunk2.Length();
+            header.FileLength += format.Length() + data_chunk.Length();
 
             temp_bytes.AddRange(header.GetBytes());
             temp_bytes.AddRange(format.GetBytes());
             temp_bytes.AddRange(data_chunk.GetBytes());
-            temp_bytes.AddRange(silence_data_chunk.GetBytes());
-            temp_bytes.AddRange(data_chunk2.GetBytes());
-            temp_bytes.AddRange(silence_data_chunk2.GetBytes());
 
             var byte_array = temp_bytes.ToArray();
             MemoryStream memory_stream = new MemoryStream(byte_array);
@@ -435,7 +424,53 @@ namespace PulseOximeter.Model
 
         private MemoryStream BackgroundThread_GenerateAlarmSound (bool generate_double)
         {
-            return null;
+            List<byte> temp_bytes = new List<byte>();
+
+            WaveHeader header = new WaveHeader();
+            FormatChunk format = new FormatChunk();
+            DataChunk data_chunk = new DataChunk();
+
+            SineGenerator signal_data = new SineGenerator(440, 44100, 175);
+            SilenceGenerator silence_data = new SilenceGenerator(44100, 80);
+            SilenceGenerator silence_data_2 = new SilenceGenerator(44100, 350);
+
+            int num_times = 1;
+            if (generate_double)
+            {
+                num_times = 2;
+            }
+
+            for (int i = 0; i < num_times; i++)
+            {
+                data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
+                data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
+                data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
+                data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
+                data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
+                data_chunk.AddSampleData(silence_data_2.Data, silence_data_2.Data);
+                data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
+                data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
+                data_chunk.AddSampleData(signal_data.Data, signal_data.Data);
+
+                if (num_times == 2)
+                {
+                    data_chunk.AddSampleData(silence_data_2.Data, silence_data_2.Data);
+                }
+                else
+                {
+                    data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
+                }
+            }
+
+            header.FileLength += format.Length() + data_chunk.Length();
+
+            temp_bytes.AddRange(header.GetBytes());
+            temp_bytes.AddRange(format.GetBytes());
+            temp_bytes.AddRange(data_chunk.GetBytes());
+
+            var byte_array = temp_bytes.ToArray();
+            MemoryStream memory_stream = new MemoryStream(byte_array);
+            return memory_stream;
         }
 
         private MemoryStream BackgroundThread_GeneratePulseSound (int pitch, int total_duration)
@@ -448,18 +483,17 @@ namespace PulseOximeter.Model
             WaveHeader header = new WaveHeader();
             FormatChunk format = new FormatChunk();
             DataChunk data = new DataChunk();
-            DataChunk silence_data_chunk = new DataChunk();
 
             SineGenerator signal_data = new SineGenerator(pitch, 44100, tone_duration);
             SilenceGenerator silence_data = new SilenceGenerator(44100, Convert.ToUInt16(silence_duration));
             data.AddSampleData(signal_data.Data, signal_data.Data);
-            silence_data_chunk.AddSampleData(silence_data.Data, silence_data.Data);
-            header.FileLength += format.Length() + data.Length() + silence_data_chunk.Length();
+            data.AddSampleData(silence_data.Data, silence_data.Data);
+
+            header.FileLength += format.Length() + data.Length();
 
             temp_bytes.AddRange(header.GetBytes());
             temp_bytes.AddRange(format.GetBytes());
             temp_bytes.AddRange(data.GetBytes());
-            temp_bytes.AddRange(silence_data_chunk.GetBytes());
 
             var byte_array = temp_bytes.ToArray();
             MemoryStream memory_stream = new MemoryStream(byte_array);

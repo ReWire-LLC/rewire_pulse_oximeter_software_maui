@@ -13,9 +13,9 @@ namespace PulseOximeter.Model.Audio
     {
         private const string CHUNK_ID = "data";
 
-        public string ChunkId { get; private set; }
-        public UInt32 ChunkSize { get; set; }
-        public short[] WaveData { get; private set; }
+        public string ChunkId { get; private set; } = CHUNK_ID;
+        public UInt32 ChunkSize { get; set; } = 0;
+        public List<short> WaveData { get; private set; } = new List<short>();
 
         public DataChunk()
         {
@@ -34,28 +34,26 @@ namespace PulseOximeter.Model.Audio
 
             chunkBytes.AddRange(Encoding.ASCII.GetBytes(ChunkId));
             chunkBytes.AddRange(BitConverter.GetBytes(ChunkSize));
-            byte[] bufferBytes = new byte[WaveData.Length * 2];
-            Buffer.BlockCopy(WaveData, 0, bufferBytes, 0,
-               bufferBytes.Length);
+            byte[] bufferBytes = new byte[WaveData.Count * 2];
+            Buffer.BlockCopy(WaveData.ToArray(), 0, bufferBytes, 0, bufferBytes.Length);
             chunkBytes.AddRange(bufferBytes.ToList());
 
             return chunkBytes.ToArray();
         }
 
-        public void AddSampleData(short[] leftBuffer,
-           short[] rightBuffer)
+        public void AddSampleData(short[] leftBuffer, short[] rightBuffer)
         {
-            WaveData = new short[leftBuffer.Length +
-               rightBuffer.Length];
+            short[] new_wave_data = new short[leftBuffer.Length + rightBuffer.Length];
             int bufferOffset = 0;
-            for (int index = 0; index < WaveData.Length; index += 2)
+            for (int index = 0; index < new_wave_data.Length; index += 2)
             {
-                WaveData[index] = leftBuffer[bufferOffset];
-                WaveData[index + 1] = rightBuffer[bufferOffset];
+                new_wave_data[index] = leftBuffer[bufferOffset];
+                new_wave_data[index + 1] = rightBuffer[bufferOffset];
                 bufferOffset++;
             }
-            ChunkSize = (UInt32)WaveData.Length * 2;
-        }
 
+            WaveData.AddRange(new_wave_data);
+            ChunkSize = (UInt32)WaveData.Count * 2;
+        }
     }
 }
