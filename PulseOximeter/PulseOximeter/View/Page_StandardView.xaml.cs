@@ -9,13 +9,4 @@ public partial class Page_StandardView : ContentPage
 		InitializeComponent();
 		BindingContext = new MainPageViewModel();
 	}
-
-    private void ConnectButton_Clicked(object sender, EventArgs e)
-    {
-		var vm = this.BindingContext as MainPageViewModel;
-		if (vm != null)
-		{
-			vm.Connect();
-		}
-    }
 }

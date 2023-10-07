@@ -79,4 +79,6 @@
 	  </MauiXaml>
 	</ItemGroup>
 
+	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionPulseOximeterHideInfoBar="True" /></VisualStudio></ProjectExtensions>
+
 </Project>

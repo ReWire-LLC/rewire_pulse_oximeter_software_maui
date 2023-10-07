@@ -60,7 +60,6 @@ namespace PulseOximeter.Model.Audio
                 }
 
                 _dataBuffer[index] = Convert.ToInt16(actual_amplitude * Math.Sin(timePeriod * index));
-                //System.Diagnostics.Debug.WriteLine("TONE VALUE: " + _dataBuffer[index].ToString());
             }
         }
     }

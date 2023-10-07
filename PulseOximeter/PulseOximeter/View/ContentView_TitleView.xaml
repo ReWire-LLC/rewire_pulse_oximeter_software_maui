@@ -6,12 +6,14 @@
     <Grid BackgroundColor="#F2F2F2">
         <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center" Margin="10">
             <Image Source="rewire_logo_blue.png" HeightRequest="50" />
-            <Label Text="ReWire Pulse Oximeter" FontSize="24" FontAttributes="Bold" VerticalOptions="Center" Margin="10,0,0,0" />
+            <Label Text="{OnIdiom ReWire Pulse Oximeter, Phone=ReWire, Tablet=ReWire Pulse Oximeter}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center" Margin="10,0,0,0" />
         </StackLayout>
 
         <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Margin="10">
-            <ImageButton x:Name="MuteButton" Source="volume_on.png" HeightRequest="50" Margin="0,0,50,0" Clicked="MuteButton_Clicked" />
-            <ImageButton x:Name="RecordButton" Source="record.png" HeightRequest="50" Margin="0,0,20,0" Clicked="RecordButton_Clicked" />
+
+            <Button x:Name="MuteButton" Text="{Binding Path=MuteButtonText, FallbackValue=Mute}" Margin="0,0,10,0" Clicked="MuteButton_Clicked" />
+            <Button x:Name="RecordButton" Text="{Binding Path=RecordButtonText, FallbackValue=Record}" Margin="0,0,10,0" Clicked="RecordButton_Clicked" />
+
         </StackLayout>
 
         <Border StrokeThickness="0" HeightRequest="4" VerticalOptions="End">

@@ -104,29 +104,5 @@ namespace PulseOximeter.ViewModel
         }
 
         #endregion
-
-        #region Methods
-
-        public void ToggleMute()
-        {
-            _model.MuteAudio = !_model.MuteAudio;
-        }
-
-        public void StartRecording(string filename)
-        {
-            _model.StartRecording(filename);
-        }
-
-        public void StopRecording()
-        {
-            _model.StopRecording();
-        }
-
-        public void Connect ()
-        {
-            _model.Connect();
-        }
-
-        #endregion
     }
 }
