@@ -20,7 +20,7 @@ namespace PulseOximeter.ViewModel
 
         public ContentView_TitleView_ViewModel()
         {
-            //empty
+            _model.PropertyChanged += ExecuteReactionsToModelPropertyChanged;
         }
 
         #endregion
