@@ -1,12 +1,54 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:PulseOximeter.View"
              x:Class="PulseOximeter.View.Page_Alarms"
+             Shell.NavBarIsVisible="False"
              Title="Page_Alarms">
-    <VerticalStackLayout>
-        <Label 
-            Text="Alarms Page"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <views:ContentView_TitleView />
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Label Text="ALARM SETTINGS" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" Margin="10" />
+
+            <Grid Grid.Row="1" Margin="0,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="1" Text="MINIMUM" HorizontalOptions="Center" FontSize="18" FontAttributes="Bold" />
+                <Label Grid.Row="0" Grid.Column="2" Text="MAXIMUM" HorizontalOptions="Center" FontSize="18" FontAttributes="Bold" />
+                <Label Grid.Row="1" Grid.Column="0" Text="Heart Rate" FontSize="18" FontAttributes="Bold" Margin="10" />
+                <Label Grid.Row="2" Grid.Column="0" Text="SpO2" FontSize="18" FontAttributes="Bold" Margin="10" />
+                <Entry x:Name="HeartRateMinimumAlarmTextBox" Grid.Row="1"  Grid.Column="1" Text="{Binding Path=HeartRateMinimumAlarm, Mode=OneWay, FallbackValue=0}" Margin="10" FontSize="18" TextChanged="HeartRateMinimumAlarmTextBox_TextChanged" />
+                <Entry x:Name="SpO2MinimumAlarmTextBox" Grid.Row="2"  Grid.Column="1" Text="{Binding Path=SpO2MinimumAlarm, Mode=OneWay, FallbackValue=0}" Margin="10" FontSize="18" TextChanged="SpO2MinimumAlarmTextBox_TextChanged" />
+                <Entry x:Name="HeartRateMaximumAlarmTextBox" Grid.Row="1"  Grid.Column="2" Text="{Binding Path=HeartRateMaximumAlarm, Mode=OneWay, FallbackValue=0}" Margin="10" FontSize="18" TextChanged="HeartRateMaximumAlarmTextBox_TextChanged" />
+                <Entry x:Name="SpO2MaximumAlarmTextBox" Grid.Row="2"  Grid.Column="2" Text="{Binding Path=SpO2MaximumAlarm, Mode=OneWay, FallbackValue=0}" Margin="10" FontSize="18" TextChanged="SpO2MaximumAlarmTextBox_TextChanged" />
+            </Grid>
+
+            <Label x:Name="ErrorMessageTextBlock" Grid.Row="2" Text="" FontSize="18" FontAttributes="Bold" TextColor="Red" HorizontalOptions="Center" Margin="10" LineBreakMode="WordWrap" />
+            <Button x:Name="ApplyButton" Grid.Row="3" HorizontalOptions="Center" Text="APPLY" WidthRequest="300" HeightRequest="75" FontSize="18" FontAttributes="Bold" Margin="0,0,0,50" Clicked="ApplyButton_Clicked" />
+            
+        </Grid>
+    </Grid>
 </ContentPage>
