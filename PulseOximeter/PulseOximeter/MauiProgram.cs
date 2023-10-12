@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OxyPlot.Maui.Skia;
 using Plugin.Maui.Audio;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
@@ -10,8 +11,9 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
-			.UseSkiaSharp(true)
+			.UseSkiaSharp()
 			.UseMauiApp<App>()
+			.UseOxyPlotSkia()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PulseOximeter.ViewModel
 {
-    public class MainPageViewModel : NotifyPropertyChangedObject
+    public class Page_StandardView_ViewModel : NotifyPropertyChangedObject
     {
         #region Private data members
 
@@ -18,7 +18,7 @@ namespace PulseOximeter.ViewModel
 
         #region Constructor
 
-        public MainPageViewModel()
+        public Page_StandardView_ViewModel()
         {
             _model = ApplicationModel.GetInstance();
             _model.PropertyChanged += ExecuteReactionsToModelPropertyChanged;
