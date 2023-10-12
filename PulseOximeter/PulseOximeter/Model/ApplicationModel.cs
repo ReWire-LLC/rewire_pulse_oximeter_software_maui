@@ -319,12 +319,120 @@ namespace PulseOximeter.Model
 
         private void BackgroundThread_UpdatePerfusionIndex(int ir)
         {
-            //TO DO
+            //The following sources were used to determine the calculation for the perfusion index:
+            //1. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3417976/
+            //2. https://www.analog.com/en/technical-articles/guidelines-for-spo2-measurement--maxim-integrated.html
+            //3. https://dsp.stackexchange.com/questions/46615/calculate-spo%E2%82%82-value-from-raw-fingertip-plethysmography-ppg
+            //4. https://www.ti.com/lit/an/slaa655/slaa655.pdf
+
+            DateTime now_datetime = DateTime.Now;
+            _recent_ir_values.Add(ir);
+            _recent_ir_value_datetimes.Add(now_datetime);
+
+            int last_index_to_remove = _recent_ir_value_datetimes.FindLastIndex(0, x => x < (now_datetime - TimeSpan.FromSeconds(5)));
+            if (last_index_to_remove > -1)
+            {
+                _recent_ir_value_datetimes.RemoveRange(0, last_index_to_remove + 1);
+                _recent_ir_values.RemoveRange(0, last_index_to_remove + 1);
+            }
+
+            if (now_datetime >= (_last_perfusion_index_update_time + _perfusion_index_update_period))
+            {
+                _last_perfusion_index_update_time = DateTime.Now;
+                var dc_component = _recent_ir_values.Average();
+                var ac_component = _recent_ir_values.Max() - _recent_ir_values.Min();
+                var pi = (ac_component / dc_component) * 100.0;
+                PerfusionIndex = pi;
+            }
         }
 
-        private void BackgroundThread_HandleRecording(string data)
+        private void BackgroundThread_HandleRecording(string data_row)
         {
-            //TO DO
+            switch (_recording_state)
+            {
+                case RecordingState.NotRecording:
+
+                    //If the user has requested to start a recording, move to the "launching recording" state
+                    if (_recording && !string.IsNullOrWhiteSpace(_recording_file))
+                    {
+                        _recording_state = RecordingState.LaunchingRecording;
+                    }
+
+                    break;
+                case RecordingState.LaunchingRecording:
+
+                    //In this state, we attempt to open a file for writing
+                    try
+                    {
+                        var output_stream = FolderManager_CrossPlatform.GetInstance().OpenFileForWriting(_recording_file);
+                        _recording_writer = new StreamWriter(output_stream, Encoding.UTF8);
+                        _recording_state = RecordingState.Recording;
+
+                        string first_line = "Milliseconds, IR, Red, HR, HR Confidence, SpO2, Algorithm State, Algorithm Status, Interbeat Interval";
+                        _recording_writer.WriteLine(first_line);
+
+                        _recording_start_time = DateTime.Now;
+                        _recording_stopwatch.Restart();
+                    }
+                    catch (Exception ex)
+                    {
+                        _recording_writer = null;
+                        _recording_state = RecordingState.NotRecording;
+                        _recording = false;
+                        _recording_stopwatch.Stop();
+                        BackgroundThread_NotifyPropertyChanged(nameof(IsRecording));
+                    }
+
+                    break;
+                case RecordingState.Recording:
+
+                    double ts = _recording_stopwatch.ElapsedMilliseconds;
+                    string new_line = ts + ", " + data_row;
+                    try
+                    {
+                        //Record the current line of data
+                        _recording_writer?.WriteLine(new_line);
+
+                        //Check to see if the UI needs to be updated with recording information
+                        if (DateTime.Now >= (_recording_last_ui_update_time + TimeSpan.FromSeconds(1)))
+                        {
+                            BackgroundThread_NotifyPropertyChanged(nameof(IsRecording));
+                        }
+
+                        //Check to see the recording has been stopped/cancelled
+                        if (!_recording)
+                        {
+                            //If so, go to the "stopping recording" state
+                            _recording_state = RecordingState.StoppingRecording;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _recording_writer = null;
+                        _recording_state = RecordingState.NotRecording;
+                        _recording = false;
+                        _recording_stopwatch.Stop();
+                        BackgroundThread_NotifyPropertyChanged(nameof(IsRecording));
+                    }
+
+                    break;
+                case RecordingState.StoppingRecording:
+
+                    try
+                    {
+                        _recording_writer?.Close();
+                        _recording_stopwatch.Stop();
+                    }
+                    catch (Exception ex)
+                    {
+                        //empty
+                    }
+
+                    _recording_state = RecordingState.NotRecording;
+                    BackgroundThread_NotifyPropertyChanged(nameof(IsRecording));
+
+                    break;
+            }
         }
 
         private void BackgroundThread_HandleAudio ()
