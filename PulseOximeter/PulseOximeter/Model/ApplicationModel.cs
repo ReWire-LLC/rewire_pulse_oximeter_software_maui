@@ -38,11 +38,6 @@ namespace PulseOximeter.Model
         private StreamWriter? _recording_writer = null;
         private DateTime _recording_last_ui_update_time = DateTime.MinValue;
 
-        private List<DateTime> _recent_ir_value_datetimes = new List<DateTime>();
-        private List<int> _recent_ir_values = new List<int>();
-        private DateTime _last_perfusion_index_update_time = DateTime.MinValue;
-        private TimeSpan _perfusion_index_update_period = TimeSpan.FromSeconds(1);
-
         private int _heart_rate = 0;
         private int _spo2 = 0;
         private int _ir = 0;
@@ -361,7 +356,7 @@ namespace PulseOximeter.Model
 
                     //Split the line into its component parts
                     var split_current_line = current_line.Split('\t').ToList();
-                    if (split_current_line.Count == 9)
+                    if (_pulse_oximeter_firmware_version == 1.0 && split_current_line.Count == 9)
                     {
                         //A well-formed line of data should have exactly nine components
                         //The first component is simply the "[DATA]" string
@@ -391,7 +386,6 @@ namespace PulseOximeter.Model
 
                             //Set the values on the model
                             IR = ir;
-                            BackgroundThread_UpdatePerfusionIndex(ir);
 
                             if (_stopwatch.ElapsedMilliseconds >= 1000)
                             {
@@ -405,36 +399,53 @@ namespace PulseOximeter.Model
                             BackgroundThread_HandleRecording(current_line.Substring(7).Replace("\t", ", "));
                         }
                     }
+                    else if (_pulse_oximeter_firmware_version > 1.0 && split_current_line.Count >= 11)
+                    {
+                        //Parse the first 10 elements of the line as integers
+                        List<int> current_line_values = new List<int>() { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                        bool parse_success = true;
+                        for (int i = 1; i < 10; i++)
+                        {
+                            parse_success = Int32.TryParse(split_current_line[i], out int result);
+                            if (!parse_success)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                current_line_values[i] = result;
+                            }
+                        }
+
+                        //The last element of the line is the perfusion index, parse it as a double
+                        var perfusion_index_str = split_current_line[10];
+                        var pi_parse_success = Double.TryParse(perfusion_index_str, out double pi);
+
+                        //If parsing was successful...
+                        if (parse_success && pi_parse_success)
+                        {
+                            //Get the IR, HR, and SpO2 components
+                            var ir = current_line_values[2];
+                            var hr = current_line_values[4];
+                            var spo2 = current_line_values[6];
+
+                            //Set the values on the model
+                            IR = ir;
+
+                            if (_stopwatch.ElapsedMilliseconds >= 1000)
+                            {
+                                HeartRate = hr;
+                                SpO2 = spo2;
+                                PerfusionIndex = pi;
+
+                                _stopwatch.Restart();
+                            }
+
+                            //Handle recording of data
+                            BackgroundThread_HandleRecording(current_line.Substring(7).Replace("\t", ", "));
+                        }
+                    }
                 }
-            }
-        }
-
-        private void BackgroundThread_UpdatePerfusionIndex(int ir)
-        {
-            //The following sources were used to determine the calculation for the perfusion index:
-            //1. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3417976/
-            //2. https://www.analog.com/en/technical-articles/guidelines-for-spo2-measurement--maxim-integrated.html
-            //3. https://dsp.stackexchange.com/questions/46615/calculate-spo%E2%82%82-value-from-raw-fingertip-plethysmography-ppg
-            //4. https://www.ti.com/lit/an/slaa655/slaa655.pdf
-
-            DateTime now_datetime = DateTime.Now;
-            _recent_ir_values.Add(ir);
-            _recent_ir_value_datetimes.Add(now_datetime);
-
-            int last_index_to_remove = _recent_ir_value_datetimes.FindLastIndex(0, x => x < (now_datetime - TimeSpan.FromSeconds(5)));
-            if (last_index_to_remove > -1)
-            {
-                _recent_ir_value_datetimes.RemoveRange(0, last_index_to_remove + 1);
-                _recent_ir_values.RemoveRange(0, last_index_to_remove + 1);
-            }
-
-            if (now_datetime >= (_last_perfusion_index_update_time + _perfusion_index_update_period))
-            {
-                _last_perfusion_index_update_time = DateTime.Now;
-                var dc_component = _recent_ir_values.Average();
-                var ac_component = _recent_ir_values.Max() - _recent_ir_values.Min();
-                var pi = (ac_component / dc_component) * 100.0;
-                PerfusionIndex = pi;
             }
         }
 
