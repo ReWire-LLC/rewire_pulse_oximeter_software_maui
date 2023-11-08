@@ -23,6 +23,13 @@ namespace PulseOximeter.Model
 
         private bool _connect_flag = false;
 
+        private string _pulse_oximeter_firmware_version_str = "1.0";
+        private double _pulse_oximeter_firmware_version = 1.0;
+        private int _firmware_version_request_count = 0;
+        private int _firmware_version_max_request_count = 3;
+        private DateTime _last_firmware_version_request_time = DateTime.MinValue;
+        private TimeSpan _firmware_version_request_interval = TimeSpan.FromSeconds(250);
+
         private bool _recording = false;
         private string _recording_file = string.Empty;
         private DateTime _recording_start_time = DateTime.MinValue;
@@ -205,15 +212,29 @@ namespace PulseOximeter.Model
                         }
 
                         break;
+
                     case DeviceConnectionState.ConnectingToDevice:
 
                         _pulse_oximeter_device.Connect();
                         if (_pulse_oximeter_device.IsConnected)
                         {
                             _pulse_oximeter_device.SendStreamOnCommand();
-                            ConnectionState = DeviceConnectionState.Connected;
+                            ConnectionState = DeviceConnectionState.Connected_RequestFirmwareVersion;
                         }
 
+                        break;
+
+                    case DeviceConnectionState.Connected_RequestFirmwareVersion:
+
+                        if (_pulse_oximeter_device.IsConnected)
+                        {
+                            BackgroundThread_HandleFirmwareVersionRequest();
+                        }
+                        else
+                        {
+                            ConnectionState = DeviceConnectionState.NoDevice;
+                        }
+                        
                         break;
                     case DeviceConnectionState.Connected:
 
@@ -234,6 +255,77 @@ namespace PulseOximeter.Model
         private void BackgroundThread_NotifyPropertyChanged(string property_name)
         {
             _background_thread.ReportProgress(1, property_name);
+        }
+
+        private void BackgroundThread_HandleFirmwareVersionRequest()
+        {
+            //Grab each line of new data
+            List<string> input_data = _pulse_oximeter_device.GetData();
+
+            //Process each line of new data
+            foreach (var current_line in input_data)
+            {
+                if (!string.IsNullOrEmpty(current_line) && current_line.StartsWith("[VERSION]"))
+                {
+                    //Sometimes we get malformed lines (probably due to serial buffer issues on Android's side)
+                    //When this happens, sometimes we will have a short line of truncasted data followed by
+                    //another set of data on the same line. So the string "[VERSION]" appears twice. If we detect
+                    //this, then let's just skip this line.
+                    if (current_line.LastIndexOf("[VERSION]") > 0)
+                    {
+                        continue;
+                    }
+
+                    //Split the line into its component parts
+                    var split_current_line = current_line.Split(' ').ToList();
+                    if (split_current_line.Count >= 2)
+                    {
+                        var version_string = split_current_line[1];
+                        _pulse_oximeter_firmware_version_str = version_string.Trim();
+                        bool parse_success = double.TryParse(_pulse_oximeter_firmware_version_str, out double result);
+                        if (parse_success)
+                        {
+                            _pulse_oximeter_firmware_version = result;
+
+                            //If we reach this point in the code, we are done. We have the firmware version. Let's
+                            //proceed to the next state
+
+                            //Enable pulse ox device streaming
+                            _pulse_oximeter_device.SendStreamOnCommand();
+
+                            //Proceed to the next state
+                            ConnectionState = DeviceConnectionState.Connected;
+
+                            //Return immediately
+                            return;
+                        }
+                    }
+                }
+            }
+
+            //Check to see if we should still request the firmware version
+            if (_firmware_version_request_count < _firmware_version_max_request_count)
+            {
+                //Check to see if enough time has passed since our last attempt to request the firmware version
+                if (DateTime.Now >= (_last_firmware_version_request_time + _firmware_version_request_interval))
+                {
+                    //If so, request the firmware version
+                    _pulse_oximeter_device.SendVersionCommand();
+                    _last_firmware_version_request_time = DateTime.Now;
+                    _firmware_version_request_count++;
+                }
+            }
+            else
+            {
+                //If we have exceeded the maximum number of allowed attempts, then we will automatically
+                //assume that the firmware is version 1.0.
+
+                //Enable pulse ox device streaming
+                _pulse_oximeter_device.SendStreamOnCommand();
+
+                //Proceed to the next state
+                ConnectionState = DeviceConnectionState.Connected;
+            }
         }
 
         private void BackgroundThread_HandleConnectedDevice ()

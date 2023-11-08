@@ -24,6 +24,9 @@ namespace PulseOximeter.Model
         [Description("Connecting to device")]
         ConnectingToDevice,
 
+        [Description("Requesting firmware version")]
+        Connected_RequestFirmwareVersion,
+
         [Description("Device connected")]
         Connected,
 

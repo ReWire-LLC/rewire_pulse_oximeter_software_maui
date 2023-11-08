@@ -66,6 +66,8 @@ namespace PulseOximeter.CrossPlatform
 
         public partial void SendStreamOnCommand();
 
+        public partial void SendVersionCommand();
+
         #endregion
     }
 }

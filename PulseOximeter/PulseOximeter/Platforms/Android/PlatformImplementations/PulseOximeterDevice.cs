@@ -54,100 +54,6 @@ namespace PulseOximeter.CrossPlatform
 
         #endregion
 
-        #region Private Methods
-
-        /*
-        private void OnPermissionGranted (UsbDevice usb_device)
-        {
-            System.Diagnostics.Debug.WriteLine("ON PERMISSIONG GRANTED");
-
-            //Set the "connected" USB device to be the device passed in as a parameter to this function
-            //_connected_usb_device = usb_device;
-
-            //Connect to the device
-            if (_selected_usb_device != null && _usb_manager != null && _usb_manager.HasPermission(_selected_usb_device))
-            {
-                //Connect();
-            }
-        }
-        */
-
-        /*
-        private void OnDeviceAttached (UsbDevice usb_device)
-        {
-            var current_activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-            if (_usb_manager != null && usb_device != null && current_activity != null)
-            {
-                //First check to see if the device matches the VID and PID of the ReWire pulse oximeter
-                if (usb_device.VendorId == REWIRE_PULSE_OXIMETER_VID && usb_device.ProductId == REWIRE_PULSE_OXIMETER_PID)
-                {
-                    //Now let's check to see if we have already been granted permission to communicate with the device
-                    if (_usb_manager.HasPermission(usb_device))
-                    {
-                        //If so, then call the function that handles what happens after permission has been granted
-                        OnPermissionGranted(usb_device);
-                    }
-                    else
-                    {
-                        //If permission has not been granted, we need to request permission
-                        PendingIntent pending_intent = PendingIntent.GetBroadcast(current_activity, 0, new Android.Content.Intent(UsbReceiver.ACTION_USB_PERMISSION), PendingIntentFlags.Immutable);
-                        IntentFilter intent_filter = new IntentFilter(UsbReceiver.ACTION_USB_PERMISSION);
-                        current_activity.RegisterReceiver(_usb_receiver, intent_filter);
-                        _usb_manager.RequestPermission(usb_device, pending_intent);
-                    }
-                }
-            }
-        }
-        */
-
-        /*
-
-        private void OnDeviceDetached (UsbDevice usb_device)
-        {
-            try
-            {
-                if (usb_device != null)
-                {
-                    if (usb_device.VendorId == REWIRE_PULSE_OXIMETER_VID && usb_device.ProductId == REWIRE_PULSE_OXIMETER_PID)
-                    {
-                        Disconnect();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                //empty
-            }
-        }
-        */
-
-        /*
-
-        private void SelectPulseOximeterDevice_FromAllConnectedDevices ()
-        {
-            //If the "connected usb device" object is currently null...
-            if (_selected_usb_device == null && _usb_manager != null)
-            {
-                //Grab the Android USB manager and get a list of connected devices
-                var attached_devices = _usb_manager.DeviceList;
-
-                //Find the pulse oximeter in the list of connected devices
-                foreach (var device_key in attached_devices.Keys)
-                {
-                    if (attached_devices[device_key].VendorId == REWIRE_PULSE_OXIMETER_VID && attached_devices[device_key].ProductId == REWIRE_PULSE_OXIMETER_PID)
-                    {
-                        _selected_usb_device = attached_devices[device_key];
-                        
-                        //We found the correct device, so break out of the loop
-                        break;
-                    }
-                }
-            }
-        }
-        */
-
-        #endregion
-
         #region Public Partial Methods
 
         public partial bool PlatformInitialization()
@@ -158,14 +64,6 @@ namespace PulseOximeter.CrossPlatform
             {
                 //Get the USB manager
                 _usb_manager = current_activity.ApplicationContext.GetSystemService(Android.Content.Context.UsbService) as Android.Hardware.Usb.UsbManager;
-
-                if (_usb_manager != null)
-                {
-                    //Subscribe to notifications from the USB receiver class
-                    //_usb_receiver.DeviceDetached += Handle_DeviceAttached;
-                    //_usb_receiver.DeviceDetached += Handle_DeviceDetached;
-                    //_usb_receiver.PermissionGranted += Handle_PermissionGranted;
-                }
             }
 
             return (current_activity != null && _usb_manager != null);
@@ -327,6 +225,16 @@ namespace PulseOximeter.CrossPlatform
             if (_serial_port != null)
             {
                 string stream_on_cmd = "stream on";
+                var stream_on_cmd_bytes = Encoding.ASCII.GetBytes(stream_on_cmd);
+                _serial_port.Write(stream_on_cmd_bytes, 0);
+            }
+        }
+
+        public partial void SendVersionCommand()
+        {
+            if (_serial_port != null)
+            {
+                string stream_on_cmd = "version";
                 var stream_on_cmd_bytes = Encoding.ASCII.GetBytes(stream_on_cmd);
                 _serial_port.Write(stream_on_cmd_bytes, 0);
             }
