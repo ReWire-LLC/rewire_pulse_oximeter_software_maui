@@ -2,7 +2,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:PulseOximeter.View"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:oxy="clr-namespace:OxyPlot.Maui.Skia;assembly=OxyPlot.Maui.Skia"
              x:Class="PulseOximeter.View.Page_DetailedView"
              Shell.NavBarIsVisible="False"
@@ -33,13 +32,14 @@
             </Grid.RowDefinitions>
 
             <Label Grid.Row="0" Grid.Column="0" Text="PPG" FontSize="{OnIdiom 24, Phone=24, Tablet=24}" HorizontalOptions="Center" />
-            <Label Grid.Row="2" Grid.Column="0" Text="Heart Rate" FontSize="{OnIdiom 24, Phone=24, Tablet=24}" HorizontalOptions="Center" />
-            <Label Grid.Row="4" Grid.Column="0" Text="SpO2" FontSize="{OnIdiom 24,Phone=24, Tablet=24}" HorizontalOptions="Center" />
+            <Label Grid.Row="1" Grid.Column="0" Text="{Binding Path=PerfusionIndex, FallbackValue=0}" FontSize="{OnIdiom 24, Phone=24, Tablet=24}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" />
 
+            <Label Grid.Row="2" Grid.Column="0" Text="Heart Rate" FontSize="{OnIdiom 24, Phone=24, Tablet=24}" HorizontalOptions="Center" />
             <Border Grid.Row="3" Grid.Column="0" StrokeShape="RoundRectangle 5,5" StrokeThickness="2" Stroke="Gray" Margin="10" Background="{Binding Path=HeartRateBackground, FallbackValue=White}">
                 <Label Text="{Binding Path=HeartRate, FallbackValue=100}" FontSize="{OnIdiom 24, Phone=24, Tablet=24}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" />
             </Border>
 
+            <Label Grid.Row="4" Grid.Column="0" Text="SpO2" FontSize="{OnIdiom 24,Phone=24, Tablet=24}" HorizontalOptions="Center" />
             <Border Grid.Row="5" Grid.Column="0" StrokeShape="RoundRectangle 5,5" StrokeThickness="2" Stroke="Gray" Margin="10" Background="{Binding Path=SpO2Background, FallbackValue=White}">
                 <Label Text="{Binding Path=SpO2, FallbackValue=100}" FontSize="{OnIdiom 24, Phone=24, Tablet=24}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" />
             </Border>
@@ -49,12 +49,6 @@
             <oxy:PlotView x:Name="PPG_PlotView" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Model="{Binding Path=PPG_PlotModel}" />
             <oxy:PlotView x:Name="HR_PlotView" Grid.Row="2" Grid.RowSpan="2" Grid.Column="1" Model="{Binding Path=HR_PlotModel}" />
             <oxy:PlotView x:Name="SpO2_PlotView" Grid.Row="4" Grid.RowSpan="2" Grid.Column="1" Model="{Binding Path=SpO2_PlotModel}" />
-
-            <!--
-            <lvc:CartesianChart x:Name="PPG_Chart" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Series="{Binding Path=PPG_Series}" XAxes="{Binding Path=PPG_XAxes}" />
-            <lvc:CartesianChart x:Name="HR_Chart" Grid.Row="2" Grid.RowSpan="2" Grid.Column="1" Series="{Binding Path=HR_Series}" XAxes="{Binding Path=HR_XAxes}" />
-            <lvc:CartesianChart x:Name="SpO2_Chart" Grid.Row="4" Grid.RowSpan="2" Grid.Column="1" Series="{Binding Path=SpO2_Series}" XAxes="{Binding Path=SpO2_XAxes}" />
-            -->
 
         </Grid>
     </Grid>

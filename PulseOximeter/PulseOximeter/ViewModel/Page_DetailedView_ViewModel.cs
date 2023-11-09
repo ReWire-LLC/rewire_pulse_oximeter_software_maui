@@ -319,6 +319,15 @@ namespace PulseOximeter.ViewModel
             }
         }
 
+        [ReactToModelPropertyChanged(new string[] { "PerfusionIndex" })]
+        public string PerfusionIndex
+        {
+            get
+            {
+                return "PI: " + _model.PerfusionIndex.ToString("0.0") + "%";
+            }
+        }
+
         [ReactToModelPropertyChanged(new string[] { "HeartRate" })]
         public SolidColorBrush HeartRateBackground
         {
